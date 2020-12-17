@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+        <p>First enable <a href="chrome://flags/#enable-experimental-web-platform-features">the experimental chrome feature for this</a>, see instructions from <a href="https://stackoverflow.com/a/62282239/2577988"></a>SO answer.</p>
+        <div id="thisdiv">
+        </div>
+
+        <script type="importmap">
+        { "imports": {
+          // "d3": "https://d3js.org/d3.v6.min.js"
+          // "d3": "https://cdn.jsdelivr.net/npm/d3/dist/d3.js"
+          "d3": "../node_modules/d3/dist/d3.js"
+        } }
+        </script>
+        <script type="module">
+            // import("d3").then(d3 => d3.select("body").append("div"));
+            // import * as d3 from 'd3';
+            // d3.select("body").append("div");
+            import { shifterator } from '../src/index.js';
+            my_shifterator = shifterator();
+            my_shifterator.setfigure("#thisdiv");
+        </script>
+    </body>
+</html>

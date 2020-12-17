@@ -1,0 +1,34 @@
+{
+  "name": "@andyreagan/d3-shifterator",
+  "version": "4.0.0",
+  "description": "test package",
+  "main": "dist/shifterator.js",
+  "unpkg": "dist/shifterator.js",
+  "module": "src/index.js",
+  "scripts": {
+    "pretest": "rollup -c",
+    "test": "eslint src"
+  },
+  "files": [
+    "dist/**/*.js",
+    "src/**/*.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andyreagan/d3-shifterator.git"
+  },
+  "author": "Andy Reagan",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/andyreagan/d3-shifterator/issues"
+  },
+  "homepage": "https://github.com/andyreagan/d3-shifterator#readme",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "eslint": "^7.15.0",
+    "rollup": "2.23.0"
+  },
+  "dependencies": {
+    "d3": "^4.13.0"
+  }
+}

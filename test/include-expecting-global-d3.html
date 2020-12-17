@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+
+<body>
+    <div id="div1"></div>
+    <div id="div2"></div>
+    <div id="div3"></div>
+    <div id="div4"></div>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="../dist/shifterator.js"></script>
+    <script type="text/javascript">
+        shifter1 = shifterator.shifterator();
+        shifter1.setfigure("#div1");
+        // clear the credit text
+        shifter1.credit_text_array([]);
+
+        var lens = [8.50, 8.44, 8.42, 8.30, 8.26, 8.22, 8.20, 8.18, 8.18, 8.16];
+        var words = ["laughter", "happiness", "love", "happy", "laughed", "laugh", "laughing", "excellent", "laughs", "joy"];
+        var reff = [29, 174, 6331, 2196, 48, 277, 471, 47, 27, 58, 85];
+        var compf = [15, 142, 5788, 1913, 56, 305, 362, 35, 31, 54];
+
+        shifter1._refF(reff);
+        shifter1._compF(compf);
+        shifter1._lens(lens);
+        shifter1._words(words);
+
+
+        // shifter1.plotdist(true);
+
+        // do the shifting
+        shifter1.shifter();
+        shifter1.setWidth(400);
+        // shifter1.setHeight(800);
+
+        /////////////
+        // how to customize the title
+        ////////////
+
+        // extract these:
+        var compH = shifter1._compH();
+        var refH = shifter1._refH();
+        // from the code inside the shifter:
+        if (compH >= refH) {
+            var happysad = "happier";
+        } else {
+            var happysad = "less happy";
+        }
+
+        // default text is:
+        // var comparisonText = splitstring(["Reference happiness: "+refH.toFixed(2),"Comparison happiness: "+compH.toFixed(2),"Why comparison is "+happysad+" than reference:"],boxwidth-10-logowidth,'14px arial');
+        // our adaptation:
+        var comparisonText = [
+            "Example shift, no translate, no credit text",
+            "width 400, will replot after 2 seconds",
+            "Reference happiness: " + refH.toFixed(2),
+            "Comparison happiness: " + compH.toFixed(2),
+            "Why comparison is " + happysad + " than reference:"
+        ];
+        // set it:
+        shifter1.setText(comparisonText)
+            .setTextBold(0)
+            .setTopTextSizes([24, 16, 16, 16, 16])
+            .setTextColors(["#D8D8D8", "#D8D8D8", "#D8D8D8", "#D8D8D8", "#D8D8D8", ])
+            .setFontSizes([16, 10, 22, 11, 8, 8, 13])
+            // [bigshifttextsize,xaxisfontsize,xylabelfontsize,wordfontsize,distlabeltext,creditfontsize,resetfontsize];
+
+        // finally, draw:
+        shifter1.plot();
+
+        window.setTimeout(function() {
+            console.log("replotting");
+            shifter1._refF(reff.reverse());
+            shifter1._compF(compf.reverse());
+            shifter1.shifter();
+            shifter1.replot();
+        }, 2000);
+
+
+        shifter2 = shifterator.shifterator()
+            .setfigure("#div2")
+            ._refF(reff)
+            ._compF(compf)
+            ._lens(lens)
+            ._words(words)
+            ._words_en(words.map(d => d+"_en"))
+            .shifter()
+            .show_x_axis(true)
+            .setText(["Example shift", "Translate option, x axis on", ""])
+            .plot()
+
+        shifter3 = shifterator.shifterator()
+            .setfigure("#div3")
+            ._refF(reff)
+            ._compF(compf)
+            ._lens(lens)
+            ._words(words)
+            // this has to be set before the shift operation
+            .plotdist(true)
+            .shifter()
+            .setHeight(300)
+            .setBgcolor("red")
+            ._xlabel_text("_xlabel_text")
+            ._ylabel_text("_ylabel_text")
+            .resetbuttontoggle(false)
+            .setText(["Example shift", "height 300, dist on, axis labels changed", "reset button off"])
+            .plot()
+
+        shifter4 = shifterator.shifterator()
+            .setfigure("#div4")
+            ._refF(reff)
+            ._compF(compf)
+            ._lens(lens)
+            ._words(words)
+            // this has to be set before the shift operation
+            .plotdist(true)
+            .shifter()
+            .setText(["Example shift", "Dist on", ""])
+            .plot()
+
+
+    </script>
+</body>
+
+</html>
