@@ -331,8 +331,7 @@ export var shifterator = function() {
     // end of the top text stuff                                                        //
     // ******************************************************************************** //
 
-
-    var numwordstoplot = 10;
+    var numwordstoplot = 200;
 
     var refF;
     var compF;
