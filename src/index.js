@@ -11,6 +11,7 @@ import {
 
 export var functionThatDependsOnD3 = function() {
     console.log(d3.version);
+    return d3.version;
 }
 
 export var shifterator = function() {
@@ -18,6 +19,19 @@ export var shifterator = function() {
     // have been set before shifting
     // (this is a double check on the page loading)
     var loadsremaining = 4;
+
+    var debug = false;
+    var debugon = function() {
+        debug = true;
+        return this;
+    };
+
+    // TODO: have useurlstate variable control the actual use (dummy for now)
+    var useurlstate = true;
+    var urloff = function() {
+        useurlstate = false;
+        return this;
+    };
 
     // will need a figure.
     // this needs to be set by setfigure() before plotting
@@ -33,25 +47,19 @@ export var shifterator = function() {
     const viz_type = urllib.encoder().varname("viz");
     const viz_type_decoder = urllib.decoder().varname("viz").varresult("wordshift");
 
-    var viz_type_use_URL = false;
-    var _viz_type_use_URL = function(_) {
-        var that = this;
-        if (!arguments.length) return viz_type_use_URL;
-        viz_type_use_URL = _;
-        return that;
-    }
-
     var getfigure = function() {
         return figure;
     }
     var setselection = function(_) {
+        var that = this;
         // wrap another relative parent div in there, for the overlay button to pad off of
-        _.append("div")
+        figure = _.append("div")
             .attr("class", "outwrapper")
             .style("position", "relative");
         if (!widthsetexplicitly) {
             grabwidth();
         }
+        return that;
     }
     var setfigure = function(_) {
         // pass in a string that can be selected from the DOM
@@ -60,7 +68,7 @@ export var shifterator = function() {
         // you can call
         //     shifterator().setfigure("#putwordshifthere")
         var that = this;
-        console.log("setting figure for wordshift");
+        debug ? console.log("setting figure for wordshift") : null;
         setselection(d3.select(_))
         return that;
     }
@@ -126,8 +134,8 @@ export var shifterator = function() {
 
     // pull the width, set the height fixed
     var grabwidth = function() {
-        // console.log("setting width from figure");
-        // console.log(parseInt(figure.style("width")));
+        debug ? console.log("setting width from figure") : null;
+        debug ? console.log(parseInt(figure.style("width"))) : null;
         // use d3.min to set a max width of fullwidth
         fullwidth = d3.min([parseInt(figure.style("width")), fullwidth]);
         boxwidth = fullwidth - margin.left - margin.right;
@@ -259,7 +267,7 @@ export var shifterator = function() {
 
     var setdata = function(a, b, c, d, e, f) {
         var that = this;
-        // console.log("setting data");
+        debug ? console.log("setting data") : null;
         sortedMag = a;
         sortedType = b;
         sortedWords = c;
@@ -359,7 +367,7 @@ export var shifterator = function() {
         refF = _;
         // what better place to check for this
         // some datasets have less than 200 words
-        numwordstoplot = d3.min([refF.length, numwordstoplot])
+        numwordstoplot = d3.min([numwordstoplot, refF.length])
         loadsremaining--;
         return that;
     }
@@ -368,6 +376,7 @@ export var shifterator = function() {
         var that = this;
         if (!arguments.length) return compF;
         compF = _;
+        numwordstoplot = d3.min([numwordstoplot, compF.length])
         loadsremaining--;
         return that;
     }
@@ -376,6 +385,7 @@ export var shifterator = function() {
         var that = this;
         if (!arguments.length) return lens;
         lens = _;
+        numwordstoplot = d3.min([numwordstoplot, lens.length])
         loadsremaining--;
         return that;
     }
@@ -391,6 +401,7 @@ export var shifterator = function() {
         var that = this;
         if (!arguments.length) return words;
         words = _;
+        numwordstoplot = d3.min([numwordstoplot, words.length])
         loadsremaining--;
         return that;
     }
@@ -411,8 +422,8 @@ export var shifterator = function() {
         // refresh the list each time
         ignoreWords = ["nigga", "niggas", "niggaz", "nigger"];
         ignoreWords = ignoreWords.concat(_);
-        // console.log(_);
-        // console.log(ignoreWords);
+        debug ? console.log(_) : null;
+        debug ? console.log(ignoreWords) : null;
         return that;
     }
 
@@ -422,7 +433,7 @@ export var shifterator = function() {
         // WARNING
         // could not get this loop to stop!
         // even when the other variables are set
-        // while (loadsremaining > 0) { console.log("waiting"); };
+        // while (loadsremaining > 0) { debug ? console.log("waiting") : null; };
         for (var i = 0; i < lens.length; i++) {
             var include = true;
             // check if in removed word list
@@ -472,14 +483,14 @@ export var shifterator = function() {
         if (prefix) {
             // new method, with numbers prefixed
             // log everything
-            // console.log(sortedMag);
-            // console.log(sortedWords);
-            // console.log(sortedWordsEn);
-            // console.log(sortedType);
-            // console.log(refF);
-            // console.log(compF);
-            // console.log(lens);
-            // console.log(words);
+            debug ? console.log(sortedMag) : null;
+            debug ? console.log(sortedWords) : null;
+            debug ? console.log(sortedWordsEn) : null;
+            debug ? console.log(sortedType) : null;
+            debug ? console.log(refF) : null;
+            debug ? console.log(compF) : null;
+            debug ? console.log(lens) : null;
+            debug ? console.log(words) : null;
             sortedWords = sortedWords.map(function(d, i) {
                 if (sortedType[i] == 0) {
                     return ((i + 1) + ". ").concat(d.concat("-\u2193")); // down // increase in happs
@@ -560,7 +571,7 @@ export var shifterator = function() {
     }
 
     var shifter = function() {
-        // console.log("running the shifter");
+        debug ? console.log("running the shifter") : null;
         var that = this;
         /* shift two frequency vectors
            -assume they've been zero-ed for stop words
@@ -573,11 +584,13 @@ export var shifterator = function() {
         //normalize frequencies
         var Nref = 0.0;
         var Ncomp = 0.0;
+        debug ? console.log(refF, compF, words, lens) : null;
         var lensLength = d3.min([refF.length, compF.length, words.length, lens.length]);
         for (var i = 0; i < lensLength; i++) {
             Nref += parseFloat(refF[i]);
             Ncomp += parseFloat(compF[i]);
         }
+        debug ? console.log(Nref, Ncomp) : null;
 
         // for (var i=0; i<refF.length; i++) {
         //     refF[i] = parseFloat(refF[i])/Nref;
@@ -591,7 +604,7 @@ export var shifterator = function() {
         }
         // normalize at the end to minimize floating point errors
         refH = refH / Nref;
-        // console.log(refH);
+        debug ? console.log(refH) : null;
 
         // compute reference variance
         // var refV = 0.0;
@@ -599,7 +612,7 @@ export var shifterator = function() {
         //     refV += refF[i]*Math.pow(parseFloat(lens[i])-refH,2);
         // }
         // refV = refV/Nref;
-        // // console.log(refV);
+        // debug ? console.log(refV) : null;
 
         // compute comparison happiness
         compH = 0.0;
@@ -607,6 +620,7 @@ export var shifterator = function() {
             compH += compF[i] * parseFloat(lens[i]);
         }
         compH = compH / Ncomp;
+        debug ? console.log(compH) : null;
 
         // do the shifting
         shiftMag = Array(lensLength);
@@ -624,6 +638,7 @@ export var shifterator = function() {
                 shiftType[i] += 1;
             }
         }
+        debug ? console.log(shiftMag, shiftType) : null;
 
         // +2 for frequency up
         // +1 for happier
@@ -646,8 +661,8 @@ export var shifterator = function() {
         sortedType = Array(numwordstoplot);
         sortedWords = Array(numwordstoplot);
 
-        // console.log(numwordstoplot);
-        // console.log(indices);
+        debug ? console.log(numwordstoplot) : null;
+        debug ? console.log(indices) : null;
 
         for (var i = 0; i < numwordstoplot; i++) {
             sortedMag[i] = shiftMag[indices[i]];
@@ -666,6 +681,7 @@ export var shifterator = function() {
                 sortedWords[i] = tmpword;
             }
         }
+        debug ? console.log(sortedMag, sortedType, sortedWords) : null;
 
         if (distflag) {
             // declare some new variables
@@ -735,7 +751,7 @@ export var shifterator = function() {
             nwords++;
             a = Math.abs(sortedMagFull[nwords]);
         }
-        // console.log(nwords);
+        debug ? console.log(nwords) : null;
 
         dist = Array(nbins);
         cdist = Array(nbins);
@@ -744,7 +760,7 @@ export var shifterator = function() {
         // should be a fast way to do this
         // when it doesn't round evenly
         var binsize = Math.floor(nwords / nbins);
-        // console.log(binsize);
+        debug ? console.log(binsize) : null;
 
         // loop over each bin, initialize it to zero
         // then add each of the types to it
@@ -756,8 +772,8 @@ export var shifterator = function() {
                 cdist[i][j] = 0;
             }
             // fast, with the sum
-            // console.log(i*binsize);
-            // console.log((i+1)*binsize);
+            debug ? console.log(i*binsize) : null;
+            debug ? console.log((i+1)*binsize) : null;
             dist[i][4] = d3.sum(sortedMagFull.slice(i * binsize, (i + 1) * binsize));
             // slower, by type
             for (var j = i * binsize; j < (i + 1) * binsize; j++) {
@@ -775,9 +791,9 @@ export var shifterator = function() {
             }
         }
 
-        // console.log(dist);
-        // console.log(cdist);
-        // console.log(cdist[cdist.length-1]);
+        debug ? console.log(dist) : null;
+        debug ? console.log(cdist) : null;
+        debug ? console.log(cdist[cdist.length-1]) : null;
         return that;
     }
 
@@ -831,7 +847,6 @@ export var shifterator = function() {
     var shifttext;
     var flipVector;
     var maxShiftSum;
-    var summaryArray;
     var toptext;
     var toptextheight;
     var credit;
@@ -885,7 +900,7 @@ export var shifterator = function() {
            for each word
 
         */
-        // console.log("plotting shift");
+        debug ? console.log("plotting shift") : null;
 
         // first things first, plot the text on top
         // if there wasn't any text passed, make it
@@ -896,14 +911,14 @@ export var shifterator = function() {
                 var happysad = "less happy";
             }
 
-            // console.log("generating text for wordshift");
+            debug ? console.log("generating text for wordshift") : null;
             comparisonText = splitarray(
                 ["Reference happiness: " + refH.toFixed(2), "Comparison happiness: " + compH.toFixed(2), "Why comparison is " + happysad + " than reference:"],
                 boxwidth - 10 - logowidth,
                 topFontSizeArray[topFontSizeArray.length - 1] + "px  " + fontString
             );
 
-            // console.log(comparisonText);
+            debug ? console.log(comparisonText) : null;
         } else {
             if (split_top_strings) {
                 comparisonText = splitarray(
@@ -912,7 +927,7 @@ export var shifterator = function() {
                     topFontSizeArray[topFontSizeArray.length - 1] + "px  " + fontString
                 );
             }
-            // console.log(comparisonText);
+            debug ? console.log(comparisonText) : null;
         }
 
         // this would put the text above the svg, in the figure div
@@ -925,7 +940,7 @@ export var shifterator = function() {
         //     .attr("class","shifttitle")
         //     .html(function(d) { return d; });
 
-        // made a new svg
+        debug ? console.log("make a new svg") : null;
         figure.selectAll("svg").remove();
         canvas = figure.append("svg")
             .attr("id", my_shift_id)
@@ -935,6 +950,7 @@ export var shifterator = function() {
             .attr("height", function() {
                 return boxheight;
             });
+        debug ? console.log(canvas) : null;
 
         // this one will be white, and behind EVERYTHING
         bgbgrect = canvas.append("rect")
@@ -946,16 +962,16 @@ export var shifterator = function() {
             .attr("fill", bgcolor);
 
         toptextheight = comparisonText.length * 17 + 13;
-        // console.log(toptextheight);
+        debug ? console.log(toptextheight) : null;
 
         // reset this
         figheight = boxheight - axeslabelmargin.top - axeslabelmargin.bottom - toptextheight;
-        // console.log(figheight);
-        // console.log(yHeight);
+        debug ? console.log(figheight) : null;
+        debug ? console.log(yHeight) : null;
 
         // take the longest of the top five words
-        // console.log("appending to sorted words");
-        // console.log(sortedWords);
+        debug ? console.log("appending to sorted words") : null;
+        debug ? console.log(sortedWords) : null;
 
         maxWidth = d3.max(sortedWords.slice(0, 7).map(function(d) {
             return stringwidth(d, wordfontsize + "px  " + fontString);
@@ -997,6 +1013,7 @@ export var shifterator = function() {
             .attr("width", figwidth)
             .attr("height", figheight)
             .attr("class", "main");
+        debug ? console.log(axes) : null;
 
         // axes.call(zoom);
         // axes.call(drag);
@@ -1007,8 +1024,8 @@ export var shifterator = function() {
         // axes.on("wheel.zoom", null);
         // axes.on("mousewheel.zoom", null);
         // // can re-register them...
-        // // axes.on("wheel",function(d) { console.log(d3.event); });
-        // // axes.on("mousewheel",function(d) { console.log(d3.event); });
+        // // axes.on("wheel",function(d) { debug ? console.log(d3.event) : null; });
+        // // axes.on("mousewheel",function(d) { debug ? console.log(d3.event) : null; });
         // // now use them to translate (instead of zoom)
         // axes.on("wheel",function(d) { d3.event.preventDefault(); zoom.translate([0,zoom.translate()[1]+d3.event.wheelDeltaY/2]); zoom.event(axes); });
         // axes.on("mousewheel",function(d) { d3.event.preventDefault(); zoom.translate([0,zoom.translate()[1]+d3.event.wheelDeltaY/2]); zoom.event(axes); });
@@ -1048,7 +1065,6 @@ export var shifterator = function() {
                 "stroke", "black"
             );
         }
-
 
         // figure.selectAll("p.sumtext.ref")
         //     .data([refH,])
@@ -1162,7 +1178,7 @@ export var shifterator = function() {
             shifttext.on("click", function(d, i) {
                 // goal is to toggle translation
                 // need translation vector
-                //console.log(flipVector[i]);
+                //debug ? console.log(flipVector[i]) : null;
                 if (flipVector[i]) {
                     d3.select(this).text(sortedWords[i]);
                     flipVector[i] = 0;
@@ -1373,14 +1389,12 @@ export var shifterator = function() {
             .range([sumTextWidth, figwidth - sumTextWidth]);
 
         // define the RHS summary bars so I can add if needed
-        // summaryArray = [sumTypes[3],sumTypes[0],sumTypes[3]+sumTypes[1],d3.sum(sumTypes)];
-        summaryArray = [sumTypes[3], sumTypes[0], d3.sum(sumTypes)];
 
         typeClass = ["posup", "negdown", "sumgrey"];
         colorClass = ["#ffff4c", "#b3b3ff", "#272727"];
 
         axes.selectAll(".sumrectR")
-            .data(summaryArray)
+            .data([sumTypes[3], sumTypes[0], d3.sum(sumTypes)])
             .enter()
             .append("rect")
             .attr("class", function(d, i) {
@@ -1430,12 +1444,10 @@ export var shifterator = function() {
                 // if we're in a shift selection
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
-                        // console.log("in a shift type, and that specific type");
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.7"
                         );
                     } else {
-                        // console.log("in a shift type, but not that specific type");
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.3"
                         );
@@ -1443,7 +1455,6 @@ export var shifterator = function() {
                 }
                 // not in a shift selection
                 else {
-                    // console.log("not in a shift type");
                     var rectSelection = d3.select(this).style(
                         "opacity", "1.0"
                     );
@@ -1453,22 +1464,16 @@ export var shifterator = function() {
                 var specificType = [3, 0, -1];
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
-                        // console.log("in a shift type, and that specific type");
+                        // debug ? console.log("in a shift type, and that specific type") : null;
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.7"
                         );
                     } else {
-                        // console.log("in a shift type, but not that specific type");
-                        // console.log(shiftType);
-                        // console.log(specificType);
-                        // console.log(i);
-                        // console.log(specificType[i]);
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.14"
                         );
                     }
                 } else {
-                    // console.log("not in a shift type");
                     var rectSelection = d3.select(this).style(
                         "opacity", "0.7"
                     );
@@ -1476,12 +1481,10 @@ export var shifterator = function() {
             })
             .on("click", function(d, i) {
                 var specificType = [3, 0, -1];
-                figure.selectAll(".sumrectR,.sumrectL").style(
-                    "opacity", "0.1"
-                );
-                var rectSelection = d3.select(this).style(
-                    "opacity", "0.7"
-                );
+                debug ? console.log("sumrectR", this, arguments, d, i, shiftTypeSelect, specificType, specificType[i], shiftType, "resetButton(true)", axes) : null;
+
+                figure.selectAll(".sumrectR,.sumrectL").style("opacity", "0.1");
+                var rectSelection = d3.select(this).style("opacity", "0.7");
                 if (i == 0) {
                     shiftTypeSelect = true;
                     shiftType = specificType[i];
@@ -1583,14 +1586,11 @@ export var shifterator = function() {
                 }
             });
 
-        // summaryArray = [sumTypes[1],sumTypes[2],sumTypes[0]+sumTypes[2]];
-        summaryArray = [sumTypes[1], sumTypes[2]];
-
         typeClass = ["posdown", "negup"];
         colorClass = ["#ffffb3", "#4c4cff"];
 
         axes.selectAll(".sumrectL")
-            .data(summaryArray)
+            .data([sumTypes[1], sumTypes[2]])
             .enter()
             .append("rect")
             .attr("class", function(d, i) {
@@ -1654,12 +1654,12 @@ export var shifterator = function() {
                 // if we're in a shift selection
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
-                        // console.log("in a shift type, and that specific type");
+                        debug ? console.log("in a shift type, and that specific type") : null;
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.7"
                         );
                     } else {
-                        // console.log("in a shift type, but not that specific type");
+                        debug ? console.log("in a shift type, but not that specific type") : null;
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.3"
                         );
@@ -1667,7 +1667,7 @@ export var shifterator = function() {
                 }
                 // not in a shift selection
                 else {
-                    // console.log("not in a shift type");
+                    debug ? console.log("not in a shift type") : null;
                     var rectSelection = d3.select(this).style(
                         "opacity", "1.0"
                     );
@@ -1677,22 +1677,15 @@ export var shifterator = function() {
                 var specificType = [1, 2];
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
-                        // console.log("in a shift type, and that specific type");
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.7"
                         );
                     } else {
-                        // console.log("in a shift type, but not that specific type");
-                        // console.log(shiftType);
-                        // console.log(specificType);
-                        // console.log(i);
-                        // console.log(specificType[i]);
                         var rectSelection = d3.select(this).style(
                             "opacity", "0.14"
                         );
                     }
                 } else {
-                    // console.log("not in a shift type");
                     var rectSelection = d3.select(this).style(
                         "opacity", "0.7"
                     );
@@ -1700,6 +1693,9 @@ export var shifterator = function() {
             })
             .on("click", function(d, i) {
                 var specificType = [1, 2];
+
+                debug ? console.log("sumrectR", i, shiftTypeSelect, specificType, specificType[i], shiftType, "resetButton(true)", axes) : null;
+
                 shiftTypeSelect = true;
                 shiftType = specificType[i];
                 figure.selectAll(".sumrectR,.sumrectL").style(
@@ -1768,7 +1764,7 @@ export var shifterator = function() {
             });
 
         axes.selectAll(".sumtextL")
-            .data(summaryArray)
+            .data([sumTypes[1], sumTypes[2]])
             .enter()
             .append("text")
             .style("text-anchor", "end")
@@ -1810,23 +1806,20 @@ export var shifterator = function() {
         axes.property("__zoom", 0);
 
         function zoomed() {
-            // console.log(d3.event);
-            // console.log(this.__zoom);
+            debug ? console.log("zoomed", d3.event, this.__zoom, zoom, axes, axes.property("__zoom")) : null;
             if ((this.__zoom <= 0) && (d3.event.deltaY < 0)) return;
             d3.event.preventDefault();
-            // console.log(zoom);
-            // console.log(axes);
-            // console.log(this);
-            // console.log(this.__zoom);
-            // console.log(axes.__zoom);
-            // console.log(axes.property("__zoom"));
+
             // axes.call(zoom.transform);
             // axes.property("__zoom",axes.property("__zoom")+d3.event.deltaY);
+
             this.__zoom += d3.event.deltaY / 2;
+
             // this prevents scrolling in the wrong direction
             // if (d3.event.transform.y > 0) {
             //     zoom.translate([0,0]).scale(1);
             // }
+
             var that = this;
             axes.selectAll("rect.shiftrect")
                 .attr("y", function(d) {
@@ -1840,20 +1833,20 @@ export var shifterator = function() {
             // axes.selectAll("text.shifttext")
             //     .attr("y",-d3.event.transform.y);
             if (distflag) {
-                // console.log(d3.event.translate);
+                debug ? console.log(d3.event.translate) : null;
                 // move scaled to the height of the window (23 words)
                 var scaledMove = d3.event.translate.y / (figheight - yHeight);
-                // console.log(scaledMove);
+                debug ? console.log(scaledMove) : null;
                 // move relative to the height of the box and those 23 words
                 var relMove = scaledMove * distgrouph * numWords / lens.length;
-                // console.log(relMove);
+                debug ? console.log(relMove) : null;
                 figure.select(".distwin").attr(
                     "y", d3.max([2, -relMove + 2]),
                 );
             }
         }; // zoomed
 
-        // // console.log(figheight);
+        // debug ? console.log(figheight) : null;
         // // attach this guy. cleaner with the group
         // help = axes.append("g")
         //     .attr("class", "help")
@@ -1877,8 +1870,8 @@ export var shifterator = function() {
         if (distflag) {
             computedistributions();
 
-            // console.log(figheight);
-            // console.log(yHeight);
+            debug ? console.log(figheight) : null;
+            debug ? console.log(yHeight) : null;
             var distgrouph = 250;
             var distgroupw = 70;
             var dxspace = 1;
@@ -1921,7 +1914,7 @@ export var shifterator = function() {
                 .curve(d3.curveCardinal);
             // .interpolate("cardinal");
 
-            // console.log(dist.map(function(d) { return d[4]; }));
+            debug ? console.log(dist.map(function(d) { return d[4]; })) : null;
 
             var distline = distgroup.append("path")
                 .datum(dist.map(function(d) {
@@ -1959,8 +1952,8 @@ export var shifterator = function() {
                 .attr("stroke-width", 1.25)
                 .attr("fill", "none");
 
-            // console.log(distgrouph*numWords/lens.length);
-            // console.log(distgrouph*numWords/2000);
+            debug ? console.log(distgrouph*numWords/lens.length) : null;
+            debug ? console.log(distgrouph*numWords/2000) : null;
 
             var distwindowrect = distgroup.append("rect")
                 .attr("x", 0)
@@ -2020,7 +2013,7 @@ export var shifterator = function() {
         }
 
         if (translate) {
-            console.log(translate);
+            debug ? console.log(translate) : null;
             translateButton();
         }
 
@@ -2029,12 +2022,12 @@ export var shifterator = function() {
     }; // plot
 
     function resetButton(showb) {
-        // console.log("resetbutton function");
+        debug ? console.log("resetbutton function") : null;
 
-        // console.log(showb);
+        debug ? console.log(showb) : null;
         // showb = showb || true;
-        // console.log("showing reset button?");
-        // console.log(showb);
+        debug ? console.log("showing reset button?") : null;
+        debug ? console.log(showb) : null;
         figure.selectAll(".resetbutton").remove();
 
         if (showb) {
@@ -2078,7 +2071,7 @@ export var shifterator = function() {
     }; // resetButton
 
     function resetfun() {
-        // console.log("reset function");
+        debug ? console.log("reset function") : null;
         figure.selectAll(".sumrectR,.sumrectL").style(
             "opacity", "0.7"
         );
@@ -2111,7 +2104,7 @@ export var shifterator = function() {
             .attr("y2", barHeight)
 
         if (viz_type_decoder().cached === "table") {
-            // console.log("removing table stuff");
+            debug ? console.log("removing table stuff") : null;
             newrank.remove();
             newfreq.remove();
             newtype.remove();
@@ -2120,7 +2113,7 @@ export var shifterator = function() {
         }
 
         viz_type.varval("wordshift");
-        // console.log("making a wordshift");
+        debug ? console.log("making a wordshift") : null;
 
         // make sure to update this
         if (comparisonText[0].length < 1) {
@@ -2130,13 +2123,13 @@ export var shifterator = function() {
                 var happysad = "less happy";
             }
 
-            // console.log("generating text for wordshift");
+            debug ? console.log("generating text for wordshift") : null;
             comparisonText = splitarray(
                 ["Reference happiness: " + refH.toFixed(2), "Comparison happiness: " + compH.toFixed(2), "Why comparison is " + happysad + " than reference:"],
                 boxwidth - 10 - logowidth,
                 "14px  " + fontString
             );
-            // console.log(comparisonText);
+            debug ? console.log(comparisonText) : null;
         } else {
             if (split_top_strings) {
                 comparisonText = splitarray(
@@ -2145,7 +2138,7 @@ export var shifterator = function() {
                     "14px  " + fontString
                 );
             }
-            // console.log(comparisonText);
+            debug ? console.log(comparisonText) : null;
         }
 
         // could set a cap to make sure no 0"s
@@ -2165,7 +2158,7 @@ export var shifterator = function() {
 
         // get the height again
         toptextheight = comparisonText.length * 17 + 13;
-        // console.log(toptextheight);
+        debug ? console.log(toptextheight) : null;
 
         resetButton(true);
 
@@ -2184,7 +2177,7 @@ export var shifterator = function() {
 
         topbgrect2.attr("height", toptextheight);
 
-        // // console.log(figheight);
+        debug ? console.log(figheight) : null;
         // canvas.selectAll("g.help").remove();
         // help.remove();
         // help = axes.append("g")
@@ -2225,9 +2218,9 @@ export var shifterator = function() {
                 return d;
             });
 
-        // console.log("the comparison text in replot is:");
-        // console.log(comparisonText);
-        // console.log(toptext);
+        debug ? console.log("the comparison text in replot is:") : null;
+        debug ? console.log(comparisonText) : null;
+        debug ? console.log(toptext) : null;
         canvas.selectAll("text.titletext").remove();
         toptext.remove();
         toptext = canvas.selectAll("text.titletext")
@@ -2258,9 +2251,9 @@ export var shifterator = function() {
 
         var newbars = axes.selectAll("rect.shiftrect").data(sortedMag);
         var newwords = axes.selectAll("text.shifttext").data(sortedMag);
-        // console.log(sortedWords);
-        // console.log(sortedMag);
-        // console.log(compF);
+        debug ? console.log(sortedWords) : null;
+        debug ? console.log(sortedMag) : null;
+        debug ? console.log(compF) : null;
 
         // if we haven't dont a subselection, apply with a transition
         var transition_duration = 0;
@@ -2314,7 +2307,7 @@ export var shifterator = function() {
             .style("font-size", wordfontsize)
             .text((d, i) => sortedWords[i])
 
-        // console.log(shiftseldecoder().current);
+        debug ? console.log(shiftseldecoder().current) : null;
         if (shiftseldecoder().current === "posup") {
             axes.selectAll("rect.shiftrect.zero").transition().duration(1000).attr("transform", function(d, i) {
                 return "translate(" + ((d > 0) ? 500 : -500) + "," + y(i + 1) + ")";
@@ -2341,7 +2334,7 @@ export var shifterator = function() {
                 return "translate(" + ((d > 0) ? x(d) + 2 : x(d) - 2) + "," + (y(i + 1) + iBarH) + ")";
             });
         } else if (shiftseldecoder().current === "negdown") {
-            // console.log("moving the words to show only negdown");
+            debug ? console.log("moving the words to show only negdown") : null;
             axes.selectAll("rect.shiftrect.zero").transition().duration(1000).attr("transform", function(d, i) {
                 return "translate(" + ((d > 0) ? figcenter : x(d)) + "," + y(i + 1) + ")";
             });
@@ -2423,11 +2416,8 @@ export var shifterator = function() {
         topScale.domain([-maxShiftSum, maxShiftSum]);
 
         // define the RHS summary bars so I can add if needed
-        // var summaryArray = [sumTypes[3],sumTypes[0],sumTypes[3]+sumTypes[1],d3.sum(sumTypes)];
-        summaryArray = [sumTypes[3], sumTypes[0], d3.sum(sumTypes)];
-
         var newRtopbars = axes.selectAll(".sumrectR")
-            .data(summaryArray);
+            .data([sumTypes[3], sumTypes[0], d3.sum(sumTypes)]);
 
         newRtopbars.transition().duration(1500)
             .attr("x", function(d, i) {
@@ -2460,10 +2450,8 @@ export var shifterator = function() {
                 return topScale(d) + 5 * d / Math.abs(d);
             });
 
-        summaryArray = [sumTypes[1], sumTypes[2], sumTypes[0] + sumTypes[2]];
-
         var newLtopbars = axes.selectAll(".sumrectL")
-            .data(summaryArray);
+            .data([sumTypes[1], sumTypes[2], sumTypes[0] + sumTypes[2]]);
 
         newLtopbars.transition().duration(1500).attr("fill", function(d, i) {
                 if (i == 0) {
@@ -2540,7 +2528,7 @@ export var shifterator = function() {
     }
 
     function translateButton() {
-        console.log("adding the translate button");
+        debug ? console.log("adding the translate button") : null;
         var translateGroup = canvas.append("g")
             .attr("class", "translatebutton")
             .attr("transform", "translate(" + (4) + "," + (136 + toptextheight) + ") rotate(-90)");
@@ -2572,13 +2560,13 @@ export var shifterator = function() {
             .attr("fill", "white") //http://www.w3schools.com/html/html_colors.asp
             .style("opacity", "0.0")
             .on("click", function() {
-                // console.log("clicked translate");
-                // console.log(flipVector);
+                debug ? console.log("clicked translate") : null;
+                debug ? console.log(flipVector) : null;
                 for (var i = 0; i < flipVector.length - 1; i++) {
                     flipVector[i] = flipVector[flipVector.length - 1];
                 }
                 flipVector[flipVector.length - 1] = (flipVector[flipVector.length - 1] + 1) % 2;
-                // console.log(flipVector);
+                debug ? console.log(flipVector) : null;
 
                 axes.selectAll("text.shifttext").transition().duration(1000)
                     // goal is to toggle translation
@@ -2607,11 +2595,13 @@ export var shifterator = function() {
 
     var resizeshift = function() {
         var that = this;
-        console.log("not implemented");
+        debug ? console.log("not implemented") : null;
         return that;
     }
 
     return {
+        "debug": debugon,
+        "urloff": urloff,
         "shift": shift,
         "ignore": ignore,
         "stop": stop,
@@ -2650,7 +2640,6 @@ export var shifterator = function() {
         "_shiftMag": _shiftMag,
         "_shiftType": _shiftType,
         "replot": replot,
-        "_viz_type_use_URL": _viz_type_use_URL,
         "_my_shift_id": _my_shift_id,
         "_sortedMag": _sortedMag,
         "_sortedType": _sortedType,

@@ -41,3 +41,13 @@ where the words, word scores, and reference/comparison frequencies are arrays:
     var compF = [15, 142, 5788, 1913, 56, 305, 362, 35, 31, 54];
 
 An example trying some of the options is at test/include-expecting-global-d3.html.
+
+## Developing
+
+Make changes, then
+
+    rollup -c
+    npm publish
+    git commit ...
+    git tag v...
+    git push origin master
