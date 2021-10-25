@@ -1,6 +1,7 @@
 # d3-shifterator
 
 Build interactive wordshift graphs on the web using D3.
+See a [live example on Observable](https://observablehq.com/@andyreagan/d3-shifterator-v4).
 
 ## Installation
 
@@ -27,8 +28,6 @@ where I'm referencing it from the `node_modules` directory, assuming you got to 
         ._compF(compF)
         ._lens(lens)
         ._words(words)
-        // this has to be set before the shift operation
-        .plotdist(true)
         .shifter()
         .setText(["Example shift", "Dist on", ""])
         .plot()
@@ -40,7 +39,7 @@ where the words, word scores, and reference/comparison frequencies are arrays:
     var refF = [29, 174, 6331, 2196, 48, 277, 471, 47, 27, 58, 85];
     var compF = [15, 142, 5788, 1913, 56, 305, 362, 35, 31, 54];
 
-An example trying some of the options is at test/include-expecting-global-d3.html.
+An example trying some of the options is at `test/include-expecting-global-d3.html`.s
 
 ## Developing
 
