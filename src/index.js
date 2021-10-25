@@ -21,7 +21,7 @@ export var shifterator = function() {
 
     // will need a figure.
     // this needs to be set by setfigure() before plotting
-    var figure = d3.select("body");
+    var figure;
 
     const shiftselencoder = urllib.encoder().varname("wordtypes");
     const shiftseldecoder = urllib.decoder().varname("wordtypes").varresult("none");
@@ -44,6 +44,15 @@ export var shifterator = function() {
     var getfigure = function() {
         return figure;
     }
+    var setselection = function(_) {
+        // wrap another relative parent div in there, for the overlay button to pad off of
+        _.append("div")
+            .attr("class", "outwrapper")
+            .style("position", "relative");
+        if (!widthsetexplicitly) {
+            grabwidth();
+        }
+    }
     var setfigure = function(_) {
         // pass in a string that can be selected from the DOM
         // e.g., if you webpage has
@@ -52,14 +61,7 @@ export var shifterator = function() {
         //     shifterator().setfigure("#putwordshifthere")
         var that = this;
         console.log("setting figure for wordshift");
-        figure = d3.select(_);
-        // wrap another relative parent div in there, for the overlay button to pad off of
-        figure = figure.append("div")
-            .attr("class", "outwrapper")
-            .style("position", "relative");
-        if (!widthsetexplicitly) {
-            grabwidth();
-        }
+        setselection(d3.select(_))
         return that;
     }
 
@@ -135,12 +137,14 @@ export var shifterator = function() {
 
     var widthsetexplicitly = false;
     var setWidth = function(_) {
+        var that = this;
         if (!arguments.length) return fullwidth;
         widthsetexplicitly = true;
         fullwidth = _;
         boxwidth = fullwidth - margin.left - margin.right;
         figwidth = boxwidth - axeslabelmargin.left - axeslabelmargin.right;
         figcenter = figwidth / 2;
+        return that;
     }
 
     // pull the width, set the height fixed
@@ -2613,6 +2617,7 @@ export var shifterator = function() {
         "stop": stop,
         "istopper": istopper,
         "setfigure": setfigure,
+        "setselection": setselection,
         "getfigure": getfigure,
         "setdata": setdata,
         "show_x_axis": show_x_axis,
