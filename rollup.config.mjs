@@ -1,5 +1,7 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import * as meta from "./package.json";
+import { createRequire } from 'module';
+
+const meta = createRequire(import.meta.url)('./package.json');
 
 export default [
     {

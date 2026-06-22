@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>d3-shifterator browser test fixture</title>
+</head>
+<body>
+    <div id="thisdiv"></div>
+    <!-- self-contained UMD bundle: d3 is bundled in, no external loads -->
+    <script src="../../dist/shifterator-bundle.js"></script>
+    <script type="text/javascript">
+        // Sample LabMT-style data (same numbers used by the manual test pages).
+        var lens = [8.50, 8.44, 8.42, 8.30, 8.26, 8.22, 8.20, 8.18, 8.18, 8.16];
+        var words = ["laughter", "happiness", "love", "happy", "laughed", "laugh", "laughing", "excellent", "laughs", "joy"];
+        var refF = [29, 174, 6331, 2196, 48, 277, 471, 47, 27, 58, 85];
+        var compF = [15, 142, 5788, 1913, 56, 305, 362, 35, 31, 54];
+
+        var s = shifterator.shifterator();
+        s.setfigure("#thisdiv")
+            .credit_text_array([])
+            ._refF(refF)
+            ._compF(compF)
+            ._lens(lens)
+            ._words(words)
+            // translation enabled so the click-to-toggle handler is wired up
+            ._words_en(words.map(function (d) { return d + "_en"; }))
+            .shifter()
+            .setWidth(400)
+            .setText(["Browser test shift", ""])
+            .plot();
+
+        // expose for assertions / debugging
+        window.__shifter = s;
+        window.__rendered = true;
+    </script>
+</body>
+</html>

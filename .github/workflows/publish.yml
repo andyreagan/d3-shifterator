@@ -1,0 +1,32 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # required for npm Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing requires a recent npm (>= 11.5.1).
+      - run: npm install -g npm@latest
+
+      - run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - run: npm test
+
+      - run: npm publish --access public
