@@ -34,32 +34,40 @@ describe('monochrome', () => {
 });
 
 describe('collideRects', () => {
+    // (x0,y0) upper-left, (x1,y1) lower-right; screen coords so y0 < y1.
     const rect = (x0, y0, x1, y1) => ({ x0, y0, x1, y1 });
 
-    // NOTE: these are characterization tests — they pin the CURRENT behavior of
-    // collideRects so the d3 migrations can't perturb it. The y-overlap logic
-    // (`b.y0 > a.y1`) appears inverted for the top-left/bottom-right convention
-    // (y0 < y1) used by cloudSpriteSimple; see the y-dimension case below. The
-    // function is not currently bundled/used anywhere.
-
-    it('reports no collision when b is fully to the right of a (x separation)', () => {
-        const a = rect(0, 0, 10, 5);
-        const b = rect(20, 8, 30, 12);
-        expect(collideRects(a, b)).toBe(false);
-    });
-
-    it('reports collision when both clauses of the (suspect) y-check pass', () => {
-        const a = rect(0, 0, 10, 5);
-        const b = rect(5, 8, 15, 12);
+    it('detects two overlapping boxes', () => {
+        const a = rect(0, 0, 10, 10);
+        const b = rect(5, 5, 15, 15);
         expect(collideRects(a, b)).toBe(true);
     });
 
-    it('does NOT detect a genuine y-overlap (documents the suspected bug)', () => {
-        // a spans y[0,5], b spans y[2,4]: these overlap, but the inverted
-        // `b.y0 > a.y1` clause makes collideRects return false.
-        const a = rect(0, 0, 10, 5);
-        const b = rect(5, 2, 15, 4);
+    it('detects full containment', () => {
+        const a = rect(0, 0, 10, 10);
+        const b = rect(2, 2, 8, 8);
+        expect(collideRects(a, b)).toBe(true);
+    });
+
+    it('reports no collision when b is separated horizontally', () => {
+        const a = rect(0, 0, 10, 10);
+        const b = rect(20, 0, 30, 10);
         expect(collideRects(a, b)).toBe(false);
+    });
+
+    it('reports no collision when b is separated vertically', () => {
+        // Regression: the original code used `b.y0 > a.y1` here, which falsely
+        // reported overlap for vertically-separated boxes (and missed genuine
+        // vertical overlaps). Fixed to `b.y0 < a.y1`.
+        const a = rect(0, 0, 10, 10);
+        const b = rect(0, 20, 10, 30);
+        expect(collideRects(a, b)).toBe(false);
+    });
+
+    it('detects a genuine vertical overlap', () => {
+        const a = rect(0, 0, 10, 10);
+        const b = rect(0, 5, 10, 8);
+        expect(collideRects(a, b)).toBe(true);
     });
 });
 

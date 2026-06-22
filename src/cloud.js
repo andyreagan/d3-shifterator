@@ -65,10 +65,12 @@ export function monochrome(pixels) {
 }
 
 export function collideRects(a, b) {
-    // a and b are both objects with x0,y0 and x1,y1 upper left and lower right points
-    // not right && not left && not above && not below
-    return b.x0 < a.x1 && b.x1 > a.x0 && b.y1 > a.y0 && b.y0 > a.y1;
-    // note that this may need to more complicated if the object is rotated:
+    // a and b are both objects with x0,y0 (upper-left) and x1,y1 (lower-right)
+    // points, in screen coordinates where x grows right and y grows down
+    // (so x0 < x1 and y0 < y1). Standard axis-aligned bounding-box overlap:
+    // not right && not left && not below && not above.
+    return b.x0 < a.x1 && b.x1 > a.x0 && b.y1 > a.y0 && b.y0 < a.y1;
+    // note that this may need to be more complicated if the object is rotated:
     // depends on the rotation
 }
 
