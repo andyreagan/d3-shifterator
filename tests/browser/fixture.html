@@ -15,22 +15,40 @@
         var refF = [29, 174, 6331, 2196, 48, 277, 471, 47, 27, 58, 85];
         var compF = [15, 142, 5788, 1913, 56, 305, 362, 35, 31, 54];
 
-        var s = shifterator.shifterator();
-        s.setfigure("#thisdiv")
-            .credit_text_array([])
-            ._refF(refF)
-            ._compF(compF)
-            ._lens(lens)
-            ._words(words)
-            // translation enabled so the click-to-toggle handler is wired up
-            ._words_en(words.map(function (d) { return d + "_en"; }))
-            .shifter()
-            .setWidth(400)
-            .setText(["Browser test shift", ""])
-            .plot();
+        // Build a shift into `selector` with the given options. Returns the
+        // shifter instance. Used by the browser tests to exercise each feature
+        // path (translation, x-axis, distribution, custom height, ...).
+        window.buildShift = function (selector, opts) {
+            opts = opts || {};
+            var s = shifterator.shifterator();
+            s.setfigure(selector)
+                .credit_text_array([])
+                ._refF(refF.slice())
+                ._compF(compF.slice())
+                ._lens(lens.slice())
+                ._words(words.slice());
+            if (opts.translate) {
+                s._words_en(words.map(function (d) { return d + "_en"; }));
+            }
+            if (opts.dist) {
+                // must be set before the shift operation
+                s.plotdist(true);
+            }
+            s.shifter();
+            s.setWidth(opts.width || 400);
+            if (opts.xaxis) {
+                s.show_x_axis(true);
+            }
+            if (opts.height) {
+                s.setHeight(opts.height);
+            }
+            s.setText(opts.text || ["Browser test shift", ""]);
+            s.plot();
+            return s;
+        };
 
-        // expose for assertions / debugging
-        window.__shifter = s;
+        // Default render used by the structural/translate specs.
+        window.__shifter = window.buildShift("#thisdiv", { translate: true });
         window.__rendered = true;
     </script>
 </body>
