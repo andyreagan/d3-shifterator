@@ -1,6 +1,6 @@
 {
   "name": "@andyreagan/d3-shifterator",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Build interactive wordshift graphs on the web using D3",
   "main": "dist/shifterator.js",
   "unpkg": "dist/shifterator.js",
@@ -36,6 +36,6 @@
     "vitest": "3.2.6"
   },
   "dependencies": {
-    "d3": "^5.16.0"
+    "d3": "^6.7.0"
   }
 }

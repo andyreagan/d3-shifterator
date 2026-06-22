@@ -9,6 +9,14 @@ import {
     urllib
 } from './urllib.js';
 
+// d3 v6+ no longer passes the element index to .on() event listeners (the
+// signature changed to (event, datum)). Recover the index from the node's
+// position among same-class siblings, scoped to this plot instance
+// (node.parentNode) so multiple shifts on one page don't collide.
+function indexOfClass(node, selector) {
+    return Array.prototype.indexOf.call(node.parentNode.querySelectorAll(selector), node);
+}
+
 export var functionThatDependsOnD3 = function() {
     console.log(d3.version);
     return d3.version;
@@ -1175,7 +1183,8 @@ export var shifterator = function() {
                 flipVector[i] = 0;
             }
             flipVector[flipVector.length - 1] = 1;
-            shifttext.on("click", function(d, i) {
+            shifttext.on("click", function(event, d) {
+                var i = indexOfClass(this, ".shifttext");
                 // goal is to toggle translation
                 // need translation vector
                 //debug ? console.log(flipVector[i]) : null;
@@ -1439,7 +1448,8 @@ export var shifterator = function() {
                 })
             .style("stroke-width", "1")
             .style("stroke", "rgb(0,0,0)")
-            .on("mouseover", function(d, i) {
+            .on("mouseover", function(event, d) {
+                var i = indexOfClass(this, ".sumrectR");
                 var specificType = [3, 0, -1];
                 // if we're in a shift selection
                 if (shiftTypeSelect) {
@@ -1460,7 +1470,8 @@ export var shifterator = function() {
                     );
                 }
             })
-            .on("mouseout", function(d, i) {
+            .on("mouseout", function(event, d) {
+                var i = indexOfClass(this, ".sumrectR");
                 var specificType = [3, 0, -1];
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
@@ -1479,7 +1490,8 @@ export var shifterator = function() {
                     );
                 }
             })
-            .on("click", function(d, i) {
+            .on("click", function(event, d) {
+                var i = indexOfClass(this, ".sumrectR");
                 var specificType = [3, 0, -1];
                 debug ? console.log("sumrectR", this, arguments, d, i, shiftTypeSelect, specificType, specificType[i], shiftType, "resetButton(true)", axes) : null;
 
@@ -1649,7 +1661,8 @@ export var shifterator = function() {
             })
             .style("stroke-width", "1")
             .style("stroke", "rgb(0,0,0)")
-            .on("mouseover", function(d, i) {
+            .on("mouseover", function(event, d) {
+                var i = indexOfClass(this, ".sumrectL");
                 var specificType = [1, 2];
                 // if we're in a shift selection
                 if (shiftTypeSelect) {
@@ -1673,7 +1686,8 @@ export var shifterator = function() {
                     );
                 }
             })
-            .on("mouseout", function(d, i) {
+            .on("mouseout", function(event, d) {
+                var i = indexOfClass(this, ".sumrectL");
                 var specificType = [1, 2];
                 if (shiftTypeSelect) {
                     if (shiftType === specificType[i]) {
@@ -1691,7 +1705,8 @@ export var shifterator = function() {
                     );
                 }
             })
-            .on("click", function(d, i) {
+            .on("click", function(event, d) {
+                var i = indexOfClass(this, ".sumrectL");
                 var specificType = [1, 2];
 
                 debug ? console.log("sumrectR", i, shiftTypeSelect, specificType, specificType[i], shiftType, "resetButton(true)", axes) : null;
@@ -1805,15 +1820,15 @@ export var shifterator = function() {
 
         axes.property("__zoom", 0);
 
-        function zoomed() {
-            debug ? console.log("zoomed", d3.event, this.__zoom, zoom, axes, axes.property("__zoom")) : null;
-            if ((this.__zoom <= 0) && (d3.event.deltaY < 0)) return;
-            d3.event.preventDefault();
+        function zoomed(event) {
+            debug ? console.log("zoomed", event, this.__zoom, zoom, axes, axes.property("__zoom")) : null;
+            if ((this.__zoom <= 0) && (event.deltaY < 0)) return;
+            event.preventDefault();
 
             // axes.call(zoom.transform);
             // axes.property("__zoom",axes.property("__zoom")+d3.event.deltaY);
 
-            this.__zoom += d3.event.deltaY / 2;
+            this.__zoom += event.deltaY / 2;
 
             // this prevents scrolling in the wrong direction
             // if (d3.event.transform.y > 0) {
@@ -1833,9 +1848,9 @@ export var shifterator = function() {
             // axes.selectAll("text.shifttext")
             //     .attr("y",-d3.event.transform.y);
             if (distflag) {
-                debug ? console.log(d3.event.translate) : null;
+                debug ? console.log(event.translate) : null;
                 // move scaled to the height of the window (23 words)
-                var scaledMove = d3.event.translate.y / (figheight - yHeight);
+                var scaledMove = event.translate.y / (figheight - yHeight);
                 debug ? console.log(scaledMove) : null;
                 // move relative to the height of the box and those 23 words
                 var relMove = scaledMove * distgrouph * numWords / lens.length;
