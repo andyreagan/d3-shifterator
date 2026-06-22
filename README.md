@@ -1,5 +1,8 @@
 # d3-shifterator
 
+[![npm version](https://img.shields.io/npm/v/@andyreagan/d3-shifterator.svg)](https://www.npmjs.com/package/@andyreagan/d3-shifterator)
+[![CI](https://github.com/andyreagan/d3-shifterator/actions/workflows/ci.yml/badge.svg)](https://github.com/andyreagan/d3-shifterator/actions/workflows/ci.yml)
+
 Build interactive wordshift graphs on the web using D3.
 See a [live example on Observable](https://observablehq.com/@andyreagan/d3-shifterator-v4).
 
