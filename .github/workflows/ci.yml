@@ -17,6 +17,10 @@ jobs:
           node-version: 22
 
       # package-lock.json is gitignored in this repo, so use `npm install`.
+      # Node 22's bundled npm 10 crashes ("Cannot read properties of null
+      # (reading 'edgesOut')") resolving the tree without a lockfile; use a
+      # current npm, as the publish job already does.
+      - run: npm install -g npm@latest
       - name: Install dependencies
         run: npm install
 
